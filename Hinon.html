@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HINON TECHNOLOGY - Cloud Enterprise System V13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb; --admin: #0f172a; --sup-pro: #7c3aed; --sup-reg: #0284c7;
+            --bg: #f1f5f9; --surface: #ffffff; --text: #0f172a; --muted: #64748b;
+            --border: #e2e8f0; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+            --sidebar-width: 260px; --sidebar-collapsed-width: 80px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+
+        /* News Ticker Bar */
+        .ticker-wrap { width: 100%; background: linear-gradient(90deg, #0f172a, #2563eb); color: #fff; overflow: hidden; height: 42px; line-height: 42px; font-size: 13px; font-weight: 700; border-bottom: 2px solid rgba(255,255,255,0.1); position: absolute; top: 0; left: 0; z-index: 10; }
+        .ticker-move { display: inline-block; white-space: nowrap; padding-left: 100%; animation: ticker 28s linear infinite; }
+        .ticker-item { display: inline-block; padding: 0 20px; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(100%, 0, 0); } }
+
+        .auth-screen { display: none; height: 100vh; justify-content: center; align-items: center; background: radial-gradient(circle at top right, #1e293b, #0f172a); padding: 20px; overflow-y: auto; position: relative; }
+        .auth-screen.active { display: flex; }
+        .auth-card { background: white; padding: 35px; border-radius: 18px; width: 100%; max-width: 650px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); margin: auto; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-size: 13px; transition: 0.2s; font-family: 'Cairo', sans-serif; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .form-row { display: flex; gap: 10px; }
+        .form-row .form-group { flex: 1; }
+
+        .btn { padding: 10px 18px; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn:hover { opacity: 0.95; transform: translateY(-1px); }
+        .btn-block { width: 100%; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-secondary { background: #64748b; color: white; }
+        .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+        .dashboard { display: none; height: 100vh; position: relative; }
+        .dashboard.active { display: flex; }
+        
+        .sidebar { width: var(--sidebar-width); color: white; display: flex; flex-direction: column; transition: width 0.3s ease, transform 0.3s ease; z-index: 1000; white-space: nowrap; }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .sidebar-header h3 { font-size: 18px; display: flex; align-items: center; gap: 10px; transition: 0.3s; font-weight: 800; }
+        .sidebar.collapsed .sidebar-header h3 span { display: none; }
+        .sidebar.collapsed .sidebar-header h3 { font-size: 22px; }
+        .sidebar-menu { flex: 1; padding: 15px 10px; overflow-y: auto; overflow-x: hidden; }
+        .menu-item { padding: 12px 15px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px; margin-bottom: 6px; transition: 0.2s; font-size: 14px; font-weight: 600; position: relative; }
+        .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.15); }
+        .menu-item i { width: 24px; text-align: center; font-size: 18px; flex-shrink: 0; }
+        .sidebar.collapsed .menu-item span { display: none; }
+        .sidebar.collapsed .menu-item { justify-content: center; padding: 12px 0; }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; transition: 0.3s; }
+        .topbar { background: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .topbar-right { display: flex; align-items: center; gap: 15px; }
+        .toggle-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text); padding: 5px; border-radius: 6px; transition: 0.2s; }
+        .toggle-btn:hover { background: var(--bg); }
+        .content-area { padding: 25px; overflow-y: auto; flex: 1; }
+        .page-section { display: none; }
+        .page-section.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 18px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .stat-info h3 { font-size: 22px; margin-top: 5px; color: var(--text); }
+        .stat-info p { color: var(--muted); font-size: 12px; font-weight: 600; }
+        .stat-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        
+        .card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; gap: 10px; flex-wrap: wrap; }
+        
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; }
+        th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        th { background: #f8fafc; color: var(--muted); font-weight: 700; white-space: nowrap; }
+        tr:hover { background: #f8fafc; }
+        
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; }
+        .badge-success { background: rgba(16,185,129,0.1); color: var(--success); }
+        .badge-danger { background: rgba(239,68,68,0.1); color: var(--danger); }
+        .badge-warning { background: rgba(245,158,11,0.1); color: var(--warning); }
+        .badge-info { background: rgba(2,132,199,0.1); color: var(--sup-reg); }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; padding: 15px; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 25px; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+
+        .checkbox-group { display: flex; flex-direction: column; gap: 10px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; }
+        .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .checkbox-item input { width: 18px; height: 18px; cursor: pointer; }
+
+        .img-preview { width: 180px; height: 180px; object-fit: contain; border-radius: 12px; border: 2px dashed var(--border); margin-top: 10px; display: none; background: #fff; }
+        .search-input { width: 250px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+
+        .copy-box { display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; margin-top: 8px; }
+        .copy-box span { font-weight: bold; flex: 1; font-family: monospace; font-size: 14px; direction: ltr; text-align: right; }
+
+        .progress-bar { width: 100%; background: #e2e8f0; border-radius: 8px; height: 10px; overflow: hidden; margin-top: 5px; }
+        .progress-fill { height: 100%; background: var(--primary); transition: width 0.3s; }
+
+        .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; opacity: 0; transition: opacity 0.3s; }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; right: -100%; height: 100vh; box-shadow: -5px 0 15px rgba(0,0,0,0.1); }
+            .sidebar.mobile-open { right: 0; }
+            .sidebar.collapsed { width: var(--sidebar-width); }
+            .sidebar-backdrop.active { display: block; opacity: 1; }
+            .content-area { padding: 15px; }
+            .search-input { width: 100%; }
+            .form-row { flex-direction: column; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Setup Screen -->
+    <div id="setup-screen" class="auth-screen">
+        <div class="auth-card">
+            <h2 style="text-align:center; margin-bottom:10px; color:var(--admin);"><i class="fa-solid fa-shield-halved"></i> HINON TECHNOLOGY V13</h2>
+            <p style="text-align:center; font-size:13px; color:var(--muted); margin-bottom:25px;">تهيئة حساب المدير الرئيسي للنظام السحابي</p>
+            <form onsubmit="setupAdmin(event)">
+                <div class="form-group"><label>اسم المستخدم للمدير *</label><input type="text" id="setupU" required></div>
+                <div class="form-group"><label>كلمة المرور *</label><input type="password" id="setupP" required></div>
+                <button type="submit" class="btn btn-primary btn-block">حفظ وإعداد النظام</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="auth-screen">
+        <div class="ticker-wrap">
+            <div class="ticker-move" id="loginNewsTicker">
+                <div class="ticker-item"><i class="fa-solid fa-gift" style="color:#f59e0b;"></i> أهلاً بكم في HINON TECHNOLOGY! خصومات حصرية للمشتركين الجدد على باقات الإنترنت عالية السرعة!</div>
+            </div>
+        </div>
+
+        <div class="auth-card" style="margin-top: 50px;">
+            <h2 style="text-align:center; margin-bottom:5px; color:var(--primary); font-weight:900;">HINON TECHNOLOGY</h2>
+            <p style="text-align:center; font-size:13px; color:var(--muted); margin-bottom:25px;">بوابة الخدمة الموحدة والربط السحابي مع MIKROTIK</p>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group"><label>اسم المستخدم / رقم الهاتف / يوزر PPPoE *</label><input type="text" id="loginU" placeholder="أدخل اسم المستخدم أو الهاتف" required></div>
+                <div class="form-group"><label>كلمة المرور *</label><input type="password" id="loginP" required></div>
+                <button type="submit" class="btn btn-primary btn-block" style="margin-bottom:10px;">تسجيل الدخول</button>
+                <button type="button" class="btn btn-warning btn-block" onclick="showRegisterScreen()">مشترك جديد؟ سجل الآن واستفد من خصم الباقة</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Screen -->
+    <div id="register-screen" class="auth-screen">
+        <div class="auth-card" style="max-width: 700px;">
+            <h2 style="text-align:center; margin-bottom:5px; color:var(--warning); font-weight:800;"><i class="fa-solid fa-clipboard-list"></i> طلب اشتراك جديد - HINON TECHNOLOGY</h2>
+            <p style="text-align:center; font-size:12px; color:var(--muted); margin-bottom:15px;">* الخصم يطبق حصراً على سعر الباقة. أجور التركيب والعتاد ثابتة ومستقلة تماماً.</p>
+            
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group"><label>الاسم الكامل *</label><input type="text" id="regName" placeholder="الاسم الثلاثي" required></div>
+                
+                <div class="form-row">
+                    <div class="form-group"><label>رقم الهاتف *</label><input type="text" id="regPhone" placeholder="09xxxxxxxx" required></div>
+                    <div class="form-group"><label>كلمة المرور *</label><input type="password" id="regPass" required></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group"><label>المدينة / المنطقة *</label><input type="text" id="regCity" required></div>
+                    <div class="form-group"><label>الشارع *</label><input type="text" id="regStreet" required></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group"><label>رقم البناء / الشقة *</label><input type="text" id="regHouseNo" required></div>
+                    <div class="form-group"><label>اسم البرج / الكبينة *</label><input type="text" id="regTower" required></div>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-item"><input type="radio" name="connSource" value="صحن" id="radioDish" checked onchange="toggleConnSource()"> توصيل عبر صحن / أنتينا استقبال</label>
+                    <label class="checkbox-item"><input type="radio" name="connSource" value="علبة" id="radioBox" onchange="toggleConnSource()"> توصيل مباشر من علبة قريبة</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-item" id="chkDishWrapper"><input type="checkbox" id="chkNeedDish" onchange="calculateEstTotal()"> صحن استقبال (Dish Antenna)</label>
+                    <label class="checkbox-item"><input type="checkbox" id="chkNeedRouter" onchange="calculateEstTotal()"> راوتر توزيع داخلي (Router)</label>
+                    <label class="checkbox-item"><input type="checkbox" id="chkNeedCable" checked onchange="toggleCableInput(); calculateEstTotal()"> تمديد كبل شبكة (Ethernet Cable)</label>
+                </div>
+
+                <div class="form-group" id="cableLenGroup">
+                    <label>طول الكبل المطلوب (بالمتر) *</label>
+                    <input type="number" id="regCableLength" value="15" min="1" oninput="calculateEstTotal()" required>
+                </div>
+
+                <div class="form-group">
+                    <label>الباقة والسرعة المختارة *</label>
+                    <select id="regPkg" onchange="calculateEstTotal()" required></select>
+                </div>
+
+                <div id="pkgDiscountCard" style="background: rgba(16,185,129,0.1); border: 1px dashed var(--success); padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; color: var(--success); display: none;">
+                    <i class="fa-solid fa-tags"></i> <span id="pkgDiscountText">خصم خاص على سعر الباقة فقط!</span>
+                </div>
+
+                <div style="background:#f8fafc; border:1px solid var(--border); padding:14px; border-radius:10px; margin-bottom:15px; font-size:13px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>سعر الباقة الأساسي:</span> <strong id="estPkgPrice">$0.00</strong></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; color:var(--success);"><span>خصم الباقة المطبق للمشترك الجديد:</span> <strong id="estPromoDiscountDisplay">-$0.00</strong></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>سعر الباقة بعد الخصم:</span> <strong id="estPkgAfterDiscount">$0.00</strong></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>أجور التركيب الثابتة:</span> <strong id="estFixFeeDisplay">$0.00</strong></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>تكلفة العتاد الإضافي:</span> <strong id="estHardwareCost">$0.00</strong></div>
+                    <div style="display:flex; justify-content:space-between; margin-top:8px; border-top:1px dashed var(--border); padding-top:6px; font-size:14px;"><span>إجمالي التكلفة المطلوب دفعها ($):</span> <strong id="estFinalTotal" style="color:var(--primary);">$0.00</strong></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group"><label>المبلغ المدفوع مقدماً ($) *</label><input type="number" step="0.01" id="regPaidAmount" value="0" min="0" oninput="calculateEstTotal()" required></div>
+                    <div class="form-group"><label>المبلغ المتبقي / الدين المترتب ($)</label><input type="text" id="regRemainingDebt" value="$0.00" readonly style="background:#e2e8f0; font-weight:bold;"></div>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-block" style="margin-bottom:10px;"><i class="fa-solid fa-paper-plane"></i> إرسال طلب الاشتراك</button>
+                <button type="button" class="btn btn-secondary btn-block" onclick="showScreen('login-screen')">رجوع لتسجيل الدخول</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Screen -->
+    <div id="payment-screen" class="auth-screen">
+        <div class="auth-card" style="text-align:center;">
+            <h2 style="color:var(--success); margin-bottom:5px;"><i class="fa-solid fa-circle-check"></i> تم قبول الطلب!</h2>
+            <p style="font-size:13px; color:var(--danger); font-weight:bold; margin-bottom:15px;">
+                <i class="fa-solid fa-stopwatch"></i> الوقت المتبقي لتحويل المبلغ بالدولار ($): <span id="countdownTimer" style="font-size:16px;">15:00</span>
+            </p>
+
+            <div style="text-align:center; margin:10px 0; padding:12px; border:1px dashed var(--border); border-radius:10px; background:#f8fafc;">
+                <img id="payQrImg" src="" style="max-width:150px; display:none; margin:0 auto 8px; border-radius:8px; border:1px solid var(--border);">
+                <button type="button" class="btn btn-sm btn-secondary" id="payDownloadBtn" onclick="downloadQRImage()" style="display:none; margin:0 auto 10px;"><i class="fa-solid fa-download"></i> حفظ صورة QR</button>
+
+                <div id="payIbanDisplayContainer" style="display:none; margin-bottom:10px; text-align:right;">
+                    <span style="font-size:12px; color:var(--muted); font-weight:600;">آيبان / حساب التحويل المعتمد ($):</span>
+                    <div class="copy-box">
+                        <span id="payIbanValue">--</span>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="copyIbanText('payIbanValue')"><i class="fa-solid fa-copy"></i> نسخ</button>
+                    </div>
+                </div>
+
+                <div class="form-group" style="text-align:right; margin-top:10px;"><label>رقم عملية التحويل (Txn ID) *</label><input type="text" id="payTxnInput" placeholder="أدخل رقم عملية التحويل..." required></div>
+            </div>
+
+            <button type="button" class="btn btn-success btn-block" onclick="submitPaymentTxn()" style="margin-bottom:10px;"><i class="fa-solid fa-check-double"></i> تأكيد وإرسال الرقم للمراجعة</button>
+            <button type="button" class="btn btn-secondary btn-block" onclick="showScreen('login-screen')">تسجيل الخروج</button>
+        </div>
+    </div>
+
+    <div class="sidebar-backdrop" id="mobileBackdrop" onclick="closeMobileSidebar()"></div>
+
+    <!-- ================= Admin Dashboard ================= -->
+    <div id="admin-dash" class="dashboard">
+        <div class="sidebar" style="background: var(--admin);" id="sidebar-admin">
+            <div class="sidebar-header"><h3><i class="fa-solid fa-crown" style="color:var(--warning);"></i> <span>HINON TECH</span></h3></div>
+            <div class="sidebar-menu">
+                <div class="menu-item active" data-title="الرئيسية" onclick="adminNav('admin-main', this)"><i class="fa-solid fa-chart-pie"></i> <span>الرئيسية</span></div>
+                <div class="menu-item" data-title="المشتركين" onclick="adminNav('admin-users', this)"><i class="fa-solid fa-users"></i> <span>إدارة المشتركين</span></div>
+                <div class="menu-item" data-title="المالية والدين" onclick="adminNav('admin-finance', this)"><i class="fa-solid fa-money-bill-wave"></i> <span>المالية والمهل ($)</span></div>
+                <div class="menu-item" data-title="الباقات والسرعات" onclick="adminNav('admin-pkgs', this)"><i class="fa-solid fa-box"></i> <span>الباقات والسرعات (KB)</span></div>
+                <div class="menu-item" data-title="خدمة العملاء" onclick="adminNav('admin-support', this)"><i class="fa-solid fa-headset"></i> <span>خدمة العملاء والرسائل</span></div>
+                <div class="menu-item" data-title="سجل النشاطات" onclick="adminNav('admin-logs', this)"><i class="fa-solid fa-clock-rotate-left"></i> <span>سجل النشاطات</span></div>
+                <div class="menu-item" data-title="الإعدادات السحابية" onclick="adminNav('admin-settings', this)"><i class="fa-solid fa-cloud"></i> <span>Firebase & GitHub API</span></div>
+                <div class="menu-item" data-title="خروج" onclick="logout()" style="color:var(--danger); margin-top:50px;"><i class="fa-solid fa-right-from-bracket"></i> <span>خروج</span></div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-right">
+                    <button class="toggle-btn" onclick="toggleSidebar('sidebar-admin')"><i class="fa-solid fa-bars"></i></button>
+                    <h3>HINON TECHNOLOGY - Control Panel</h3>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-danger" onclick="resetSystemData()" title="تفريغ وإعادة ضبط البيانات"><i class="fa-solid fa-rotate-left"></i> ضبط المصنع</button>
+                    <span id="adminName" style="font-weight:bold; color:var(--muted); margin-right:10px;"></span>
+                </div>
+            </div>
+            <div class="content-area">
+                <div id="admin-main" class="page-section active">
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-info"><p>إجمالي المشتركين</p><h3 id="stat-users">0</h3></div><div class="stat-icon" style="background:rgba(37,99,235,0.1); color:var(--primary);"><i class="fa-solid fa-users"></i></div></div>
+                        <div class="stat-card"><div class="stat-info"><p>طلبات بانتظار الموافقة</p><h3 id="stat-reqs">0</h3></div><div class="stat-icon" style="background:rgba(245,158,11,0.1); color:var(--warning);"><i class="fa-solid fa-clock"></i></div></div>
+                        <div class="stat-card"><div class="stat-info"><p>إجمالي الديون ($)</p><h3 id="stat-debts">$0.00</h3></div><div class="stat-icon" style="background:rgba(239,68,68,0.1); color:var(--danger);"><i class="fa-solid fa-hand-holding-dollar"></i></div></div>
+                        <div class="stat-card"><div class="stat-info"><p>تذاكر الدعم المعلقة</p><h3 id="stat-tickets">0</h3></div><div class="stat-icon" style="background:rgba(124,58,237,0.1); color:var(--sup-pro);"><i class="fa-solid fa-headset"></i></div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h4>طلبات الاشتراك والتجديد (المراجعة اليدوية)</h4></div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>المشترك والهاتف</th>
+                                        <th>نوع الطلب</th>
+                                        <th>التفاصيل والعتاد</th>
+                                        <th>المدفوع والعملية</th>
+                                        <th>خصم الباقة ($)</th>
+                                        <th>الحالة</th>
+                                        <th>موافقة واعتماد</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-reqs-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-users" class="page-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>إدارة المشتركين والسرعات بالكيلوبايت (KB) السحابية</h4>
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" class="search-input" id="searchUser" placeholder="بحث باسم المشترك، الهاتف، أو اليوزر..." onkeyup="filterUsers()">
+                                <button class="btn btn-primary btn-sm" onclick="openAddUserModal()"><i class="fa-solid fa-user-plus"></i> إضافة مشترك جديد</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>المشترك</th>
+                                        <th>بيانات PPPoE / IP</th>
+                                        <th>استهلاك السعة (GB)</th>
+                                        <th>السرعة المطبقة (KB)</th>
+                                        <th>تاريخ الانتهاء</th>
+                                        <th>الديون ($)</th>
+                                        <th>الحالة</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-finance" class="page-section">
+                    <div class="card">
+                        <div class="card-header"><h4>إدارة مهل السداد والدفعات الإلزامية ($)</h4></div>
+                        <form onsubmit="saveFinanceRules(event)" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:20px; background:#f8fafc; padding:15px; border-radius:8px;">
+                            <div class="form-group"><label>مهلة سداد الديون (بالأيام)</label><input type="number" id="settingDebtDays" value="5" required></div>
+                            <div class="form-group"><label>قيمة الدفعة المستوجبة الأدنى ($)</label><input type="number" step="0.01" id="settingMinPayment" value="10" required></div>
+                            <div style="display:flex; align-items:flex-end;"><button type="submit" class="btn btn-success btn-block"><i class="fa-solid fa-floppy-disk"></i> حفظ شروط المهل والدفع</button></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- إعدادات الباقات، العتاد، وأجور التركيب الثابتة المستقلة -->
+                <div id="admin-pkgs" class="page-section">
+                    <div class="card">
+                        <div class="card-header"><h4>إدارة أجور التركيب الثابتة وأسعار العتاد</h4></div>
+                        <form onsubmit="saveHardwarePrices(event)" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:20px; background:#f8fafc; padding:15px; border-radius:8px;">
+                            <div class="form-group"><label>أجور التركيب الثابتة ($) *</label><input type="number" step="0.01" id="priceInstallationFee" placeholder="10" required></div>
+                            <div class="form-group"><label>سعر متر الكبل ($)</label><input type="number" step="0.01" id="priceCableM" required></div>
+                            <div class="form-group"><label>سعر الصحن ($)</label><input type="number" step="0.01" id="priceDish" required></div>
+                            <div class="form-group"><label>سعر الراوتر ($)</label><input type="number" step="0.01" id="priceRouter" required></div>
+                            <div class="form-group"><label>سعر التوصيل من العلبة ($)</label><input type="number" step="0.01" id="priceBox" required></div>
+                            <div style="display:flex; align-items:flex-end; grid-column: 1 / -1;"><button type="submit" class="btn btn-success btn-block"><i class="fa-solid fa-floppy-disk"></i> حفظ أجور التركيب الثابتة وأسعار العتاد</button></div>
+                        </form>
+
+                        <div class="card-header"><h4>إضافة باقة جديدة (تحديد السرعات بالكيلوبايت KB والخصم)</h4></div>
+                        <form onsubmit="addPackage(event)" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:20px;">
+                            <div class="form-group"><label>اسم الباقة</label><input type="text" id="pkgName" placeholder="مثلاً: 2 ميجا السريعة" required></div>
+                            <div class="form-group"><label>السعر الأساسي ($)</label><input type="number" step="0.01" id="pkgPrice" placeholder="15" required></div>
+                            <div class="form-group"><label>السرعة الأساسية (KB) *</label><input type="number" id="pkgSpeedKb" placeholder="2000 (كيلوبايت)" required></div>
+                            <div class="form-group"><label>خصم الباقة للجدد (%)</label><input type="number" id="pkgDiscount" placeholder="10" value="10" required></div>
+                            <div class="form-group"><label>سعة الاستهلاك (GB)</label><input type="number" id="pkgLimitGb" placeholder="100" value="100" required></div>
+                            <div class="form-group"><label>السرعة بعد نفاد السعة (KB) *</label><input type="number" id="pkgThrottledKb" placeholder="512" value="512" required></div>
+                            <div style="grid-column: 1 / -1;"><button type="submit" class="btn btn-success btn-block"><i class="fa-solid fa-plus"></i> إضافة الباقة مع قواعد السرعة والخصم</button></div>
+                        </form>
+
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>اسم الباقة</th>
+                                        <th>السعر الأساسي ($)</th>
+                                        <th>السرعة الأساسية (KB)</th>
+                                        <th>خصم الباقة (%)</th>
+                                        <th>سعة الاستهلاك (GB)</th>
+                                        <th>السرعة بعد النفاد (KB)</th>
+                                        <th>إجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-pkg-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-support" class="page-section">
+                    <div class="card">
+                        <div class="card-header"><h4>مركز تذاكر ورسائل الدعم الفني</h4></div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>المشترك</th>
+                                        <th>موضوع الشكوى / الاستفسار</th>
+                                        <th>الرسالة</th>
+                                        <th>التاريخ</th>
+                                        <th>الحالة</th>
+                                        <th>إجراء الرد</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-support-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-logs" class="page-section">
+                    <div class="card"><div class="card-header"><h4>سجل النشاطات والمزامنة السحابية</h4></div>
+                    <div class="table-responsive"><table><thead><tr><th>التاريخ</th><th>المستخدم</th><th>الحركة البرمجية</th></tr></thead><tbody id="admin-logs-table"></tbody></table></div></div>
+                </div>
+
+                <div id="admin-settings" class="page-section">
+                    <div class="card">
+                        <div class="card-header"><h4>إعدادات الربط السحابي (Firebase & GitHub MikroTik Sync)</h4></div>
+                        <form onsubmit="saveCloudSettings(event)" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+                            <div class="form-group"><label>Firebase Realtime DB URL</label><input type="text" id="fbUrl" placeholder="https://hinon-tech-default-rtdb.firebaseio.com"></div>
+                            <div class="form-group"><label>Firebase API Key</label><input type="password" id="fbKey" placeholder="AIzaSy..."></div>
+                            <div class="form-group"><label>GitHub Repository Webhook API</label><input type="text" id="ghRepo" placeholder="https://api.github.com/repos/user/repo/dispatches"></div>
+                            <div class="form-group"><label>GitHub Personal Access Token</label><input type="password" id="ghToken" placeholder="ghp_..."></div>
+                            <div class="form-group" style="grid-column: 1 / -1;"><label>نص الشريط المتحرك بشاشة الدخول</label><input type="text" id="settingTickerText" placeholder="أدخل نص العروض والخصومات..."></div>
+                            <div class="form-group"><label>صورة QR الخاصة بالدفع (USD)</label><input type="file" id="qrFile" accept="image/*" onchange="previewAndDetectQR(event)"><img id="qrPreview" class="img-preview" src=""></div>
+                            <div class="form-group"><label>رقم الحساب / آيبان الدفع بالدولار</label><input type="text" id="settingQrIban" placeholder="US-9988776655443321"></div>
+                            <div style="grid-column: 1 / -1;"><button type="submit" class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ إعدادات السحابة والمزامنة المباشرة</button></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= Client Dashboard ================= -->
+    <div id="client-dash" class="dashboard">
+        <div class="sidebar" style="background: var(--primary);" id="sidebar-client">
+            <div class="sidebar-header"><h3><i class="fa-solid fa-house-user"></i> <span>HINON TECH</span></h3></div>
+            <div class="sidebar-menu">
+                <div class="menu-item active" data-title="الرئيسية" onclick="clientNav('client-main', this)"><i class="fa-solid fa-gauge"></i> <span>الرئيسية والإنترنت</span></div>
+                <div class="menu-item" data-title="قياس السرعة" onclick="clientNav('client-speedtest', this)"><i class="fa-solid fa-gauge-high"></i> <span>قياس سرعة الإنترنت</span></div>
+                <div class="menu-item" data-title="خدمة العملاء" onclick="clientNav('client-support', this)"><i class="fa-solid fa-headset"></i> <span>خدمة العملاء والدعم</span></div>
+                <div class="menu-item" data-title="خروج" onclick="logout()" style="color:white; margin-top:50px;"><i class="fa-solid fa-right-from-bracket"></i> <span>خروج</span></div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-right">
+                    <button class="toggle-btn" onclick="toggleSidebar('sidebar-client')"><i class="fa-solid fa-bars"></i></button>
+                    <h3 id="clientHeaderName">مشترك HINON TECH</h3>
+                </div>
+            </div>
+            <div class="content-area">
+                <div id="client-main" class="page-section active">
+                    <div id="clientDebtAlertContainer"></div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-info"><p>الباقة والسرعة الفعالة</p><h3 id="cli-pkg">--</h3></div><div class="stat-icon" style="background:rgba(37,99,235,0.1); color:var(--primary);"><i class="fa-solid fa-wifi"></i></div></div>
+                        <div class="stat-card"><div class="stat-info"><p>تاريخ الانتهاء</p><h3 id="cli-exp">--</h3></div><div class="stat-icon" style="background:rgba(245,158,11,0.1); color:var(--warning);"><i class="fa-solid fa-calendar"></i></div></div>
+                        <div class="stat-card"><div class="stat-info"><p>الديون المستحقة ($)</p><h3 id="cli-debt">$0.00</h3></div><div class="stat-icon" style="background:rgba(239,68,68,0.1); color:var(--danger);"><i class="fa-solid fa-file-invoice-dollar"></i></div></div>
+                    </div>
+
+                    <!-- عداد سعة الاستهلاك والتخفيض للكيلوبايت -->
+                    <div class="card" style="border-right: 4px solid var(--primary);">
+                        <h4><i class="fa-solid fa-chart-line"></i> استهلاك باقة الإنترنت وسعة الاستهلاك العادل (FUP)</h4>
+                        <div style="margin-top:15px;">
+                            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold;">
+                                <span>المنقضي من السعة: <span id="cliUsedGb">0</span> GB / <span id="cliLimitGb">0</span> GB</span>
+                                <span id="cliQuotaPercent">0%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" id="cliQuotaBar" style="width: 0%;"></div></div>
+                            <p id="cliQuotaNotice" style="font-size:12px; margin-top:8px; color:var(--muted); font-weight:600;">
+                                عند استهلاك كامل السعة، يتم تخفيض سرعة الاشتراك تلقائياً إلى السرعة المحددة بالكيلوبايت حتى بداية الشهر الجديد.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- بيانات الاتصال الخاصة بالمشترك -->
+                    <div class="card" style="border: 2px solid var(--primary);">
+                        <h4 style="color:var(--primary);"><i class="fa-solid fa-lock"></i> بيانات الاتصال الخاصة بك (PPPoE / IP)</h4>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-top:10px;">
+                            <p><strong>اسم المستخدم (PPPoE User):</strong> <code id="cli-pppoe-u" style="font-size:15px; color:var(--primary);">--</code></p>
+                            <p><strong>كلمة سر الاتصال:</strong> <code id="cli-pppoe-p" style="font-size:15px; color:var(--primary);">--</code></p>
+                            <p><strong>عنوان IP الخاص بك:</strong> <span id="cli-static-ip">تلقائي (DHCP)</span></p>
+                            <p><strong>حالة الاشتراك:</strong> <span id="cli-status" class="badge">--</span></p>
+                        </div>
+                    </div>
+
+                    <!-- تسديد الدين وتجديد الباقة -->
+                    <div class="card" id="cardPaymentActions">
+                        <h4>تسديد الديون وتجديد الاشتراك بالدولار ($)</h4>
+                        <div style="text-align:center; margin:15px 0;">
+                            <img id="cliQrImg" src="" style="max-width:150px; border-radius:12px; display:none; margin:0 auto 8px; border:1px dashed var(--border);">
+                            <button type="button" class="btn btn-sm btn-secondary" id="cliDownloadBtn" onclick="downloadQRImage()" style="display:none; margin:0 auto 12px;"><i class="fa-solid fa-download"></i> حفظ صورة QR الدفع</button>
+                            
+                            <div id="cliIbanContainer" style="display:none; max-width:400px; margin:0 auto 15px;">
+                                <span style="font-size:12px; color:var(--muted); font-weight:600;">حساب التحويل بالدولار ($):</span>
+                                <div class="copy-box">
+                                    <span id="cliIbanValue">--</span>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="copyIbanText('cliIbanValue')">نسخ</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group"><label>المبلغ المراد تحويله ($)</label><input type="number" step="0.01" id="cliPayAmount" placeholder="أدخل المبلغ بالدولار..."></div>
+                            <div class="form-group"><label>رقم عملية التحويل (Txn ID)</label><input type="text" id="cliTxnInput" placeholder="أدخل رقم عملية التحويل..."></div>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn btn-warning" style="flex:1;" onclick="submitDebtPayment()"><i class="fa-solid fa-hand-holding-dollar"></i> تسديد الدين المترتب ($)</button>
+                            <button class="btn btn-success" style="flex:1;" onclick="requestRenewal()"><i class="fa-solid fa-rotate"></i> تجديد باقة الاشتراك</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قسم قياس السرعة (Speed Test) -->
+                <div id="client-speedtest" class="page-section">
+                    <div class="card" style="text-align:center; padding:30px;">
+                        <h2><i class="fa-solid fa-gauge-high" style="color:var(--primary);"></i> فحص وقياس سرعة الإنترنت</h2>
+                        <p style="color:var(--muted); font-size:13px; margin:10px 0 20px;">اختبر سرعة اتصالك الحالي بالشبكة والسرعة الفعلية لخط الـ PPPoE الخاص بك.</p>
+                        
+                        <div style="font-size:36px; font-weight:900; color:var(--primary); margin:20px 0;" id="speedResultDisplay">-- Mbps</div>
+                        
+                        <button class="btn btn-primary btn-lg" onclick="runSpeedTest()"><i class="fa-solid fa-play"></i> بدء اختبار السرعة الآن</button>
+                    </div>
+                </div>
+
+                <!-- قسم خدمة العملاء للمشتركين -->
+                <div id="client-support" class="page-section">
+                    <div class="card">
+                        <h4><i class="fa-solid fa-headset"></i> مركز خدمة العملاء والدعم الفني - HINON TECH</h4>
+                        <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">أرسل تذكرة دعم فني وسيتم متابعتها والرد عليك فوراً من قبل فريق الدعم الفني.</p>
+
+                        <form onsubmit="submitSupportTicket(event)">
+                            <div class="form-group"><label>موضوع الشكوى / الاستفسار *</label><input type="text" id="ticketSubject" placeholder="مثلاً: بطء بالسرعة، استفسار..." required></div>
+                            <div class="form-group"><label>تفاصيل الرسالة *</label><textarea id="ticketBody" rows="4" placeholder="اكتب تفاصيل مشكلتك هنا..." required></textarea></div>
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال التذكرة للدعم الفني</button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h4>سجل تذاكرك ورسائل الدعم الفني</h4>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>الموضوع</th>
+                                        <th>التاريخ</th>
+                                        <th>الحالة</th>
+                                        <th>رد الإدارة والدعم</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="client-tickets-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 id="modalTitle">عنوان النافذة</h3>
+                <button onclick="closeModal()" class="btn btn-danger btn-sm"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        let db = {
+            admin: JSON.parse(localStorage.getItem('db_admin')) || null,
+            users: JSON.parse(localStorage.getItem('db_users')) || [],
+            packages: JSON.parse(localStorage.getItem('db_pkgs')) || [
+                {id:1, name:'2 ميجا الاقتصادية', price:15, speedKb:2000, discountNew:10, limitGb:100, throttledKb:512, days:30},
+                {id:2, name:'4 ميجا Pro', price:25, speedKb:4000, discountNew:15, limitGb:200, throttledKb:1000, days:30},
+                {id:3, name:'8 ميجا VIP', price:45, speedKb:8000, discountNew:20, limitGb:400, throttledKb:2000, days:30}
+            ],
+            hardwarePrices: JSON.parse(localStorage.getItem('db_hw_prices')) || { installationFee: 10, cableM: 0.50, dish: 40, router: 25, box: 15 },
+            financeRules: JSON.parse(localStorage.getItem('db_finance_rules')) || { debtDays: 5, minPayment: 5 },
+            requests: JSON.parse(localStorage.getItem('db_reqs')) || [],
+            tickets: JSON.parse(localStorage.getItem('db_tickets')) || [],
+            logs: JSON.parse(localStorage.getItem('db_logs')) || [],
+            settings: JSON.parse(localStorage.getItem('db_settings')) || { 
+                qr: '', 
+                qrIban: '', 
+                tickerText: 'أهلاً بكم في HINON TECHNOLOGY! خصومات مميزة على سعر الباقات للمشتركين الجدد الآن!',
+                fbUrl: '', fbKey: '', ghRepo: '', ghToken: ''
+            }
+        };
+
+        let currentUser = null;
+        let pendingUserRegData = null;
+        let paymentTimerInterval = null;
+
+        function save() {
+            localStorage.setItem('db_admin', JSON.stringify(db.admin));
+            localStorage.setItem('db_users', JSON.stringify(db.users));
+            localStorage.setItem('db_pkgs', JSON.stringify(db.packages));
+            localStorage.setItem('db_hw_prices', JSON.stringify(db.hardwarePrices));
+            localStorage.setItem('db_finance_rules', JSON.stringify(db.financeRules));
+            localStorage.setItem('db_reqs', JSON.stringify(db.requests));
+            localStorage.setItem('db_tickets', JSON.stringify(db.tickets));
+            localStorage.setItem('db_logs', JSON.stringify(db.logs));
+            localStorage.setItem('db_settings', JSON.stringify(db.settings));
+        }
+
+        function addLog(action) {
+            db.logs.unshift({ date: new Date().toLocaleString('ar-EG'), user: currentUser ? currentUser.name || currentUser.phone : 'النظام', action });
+            if(db.logs.length > 100) db.logs.pop();
+            save();
+        }
+
+        function syncWithCloudMikrotik(actionDetails) {
+            addLog(`[Cloud Sync] تم إرسال الأمر للمايكروتيك عبر Firebase/GitHub: ${actionDetails}`);
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.auth-screen, .dashboard').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(id === 'payment-screen') {
+                setupPaymentScreen();
+                startPaymentCountdown(15 * 60);
+            } else if(id === 'login-screen') {
+                if(db.settings.tickerText) {
+                    document.getElementById('loginNewsTicker').innerHTML = `<div class="ticker-item"><i class="fa-solid fa-bullhorn" style="color:#f59e0b;"></i> ${db.settings.tickerText}</div>`;
+                }
+            } else {
+                if(paymentTimerInterval) clearInterval(paymentTimerInterval);
+            }
+        }
+
+        function closeModal() { document.getElementById('modal').classList.remove('active'); }
+        function openModal(title, bodyHtml) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalBody').innerHTML = bodyHtml;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function toggleSidebar(sidebarId) {
+            const sidebar = document.getElementById(sidebarId);
+            const backdrop = document.getElementById('mobileBackdrop');
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('mobile-open');
+                backdrop.classList.toggle('active');
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
+        }
+        function closeMobileSidebar() {
+            document.querySelectorAll('.sidebar').forEach(s => s.classList.remove('mobile-open'));
+            document.getElementById('mobileBackdrop').classList.remove('active');
+        }
+
+        function init() {
+            checkDebtDeadlinesAutoBan();
+            if (!db.admin) showScreen('setup-screen');
+            else showScreen('login-screen');
+            updatePackageSelects();
+        }
+
+        function checkDebtDeadlinesAutoBan() {
+            const now = new Date();
+            db.users.forEach(u => {
+                if (u.role === 'client' && (u.debt || 0) > 0 && u.debtDueDate) {
+                    const dueDate = new Date(u.debtDueDate);
+                    if (now > dueDate && u.status === 'نشط') {
+                        u.status = 'مفصول لعدم السداد';
+                        syncWithCloudMikrotik(`فصل المشترك ${u.pppoeUser} تلقائياً لانقضاء مهلة سداد الدين`);
+                        addLog(`فصل المشترك ${u.phone} تلقائياً لانقضاء مهلة السداد`);
+                    }
+                }
+            });
+            save();
+        }
+
+        function updatePackageSelects() {
+            const opts = db.packages.map(p => `<option value="${p.id}" data-price="${p.price}" data-discount="${p.discountNew}">${p.name} - $${p.price} (${p.speedKb} KB - خصم الباقة: ${p.discountNew}%)</option>`).join('');
+            const regPkg = document.getElementById('regPkg');
+            if(regPkg) {
+                regPkg.innerHTML = opts;
+                calculateEstTotal();
+            }
+        }
+
+        function toggleConnSource() {
+            const isDish = document.getElementById('radioDish').checked;
+            document.getElementById('chkDishWrapper').style.display = isDish ? 'flex' : 'none';
+            if(!isDish) document.getElementById('chkNeedDish').checked = false;
+            calculateEstTotal();
+        }
+
+        function toggleCableInput() {
+            const needCable = document.getElementById('chkNeedCable').checked;
+            document.getElementById('cableLenGroup').style.display = needCable ? 'block' : 'none';
+        }
+
+        /* حاسبة التكاليف: أجور التركيب ثابتة ومستقلة، والخصم يطبق حصراً على سعر الباقة */
+        function calculateEstTotal() {
+            const isDish = document.getElementById('radioDish').checked;
+            const needDish = document.getElementById('chkNeedDish').checked;
+            const needRouter = document.getElementById('chkNeedRouter').checked;
+            const needCable = document.getElementById('chkNeedCable').checked;
+            const cableLen = parseInt(document.getElementById('regCableLength').value) || 0;
+            
+            const pkgSelect = document.getElementById('regPkg');
+            const selectedOpt = pkgSelect ? pkgSelect.options[pkgSelect.selectedIndex] : null;
+            
+            let pkgPrice = 0;
+            let discountPercent = 0;
+            
+            if(selectedOpt) {
+                pkgPrice = parseFloat(selectedOpt.getAttribute('data-price')) || 0;
+                discountPercent = parseFloat(selectedOpt.getAttribute('data-discount')) || 0;
+            }
+
+            let hwCost = 0;
+            const prices = db.hardwarePrices;
+            const fixFee = prices.installationFee || 0; // أجور التركيب الثابتة
+
+            if (isDish) {
+                if (needDish) hwCost += (prices.dish || 0);
+            } else {
+                hwCost += (prices.box || 0);
+            }
+
+            if (needRouter) hwCost += (prices.router || 0);
+            if (needCable) hwCost += (cableLen * (prices.cableM || 0));
+
+            const promoDiscountVal = (pkgPrice * discountPercent) / 100;
+            const discountedPkgPrice = pkgPrice - promoDiscountVal;
+
+            const finalTotal = discountedPkgPrice + fixFee + hwCost;
+            const paid = parseFloat(document.getElementById('regPaidAmount').value) || 0;
+            const remaining = Math.max(0, finalTotal - paid);
+
+            const cardEl = document.getElementById('pkgDiscountCard');
+            if(discountPercent > 0) {
+                cardEl.style.display = 'block';
+                document.getElementById('pkgDiscountText').innerText = `تم تطبيق خصم ${discountPercent}% على سعر الباقة فقط (توفير $${promoDiscountVal.toFixed(2)}). أجور التركيب والعتاد ثابتة ومستقلة تماماً.`;
+            } else {
+                cardEl.style.display = 'none';
+            }
+
+            document.getElementById('estPkgPrice').innerText = '$' + pkgPrice.toFixed(2);
+            document.getElementById('estPromoDiscountDisplay').innerText = '-$' + promoDiscountVal.toFixed(2);
+            document.getElementById('estPkgAfterDiscount').innerText = '$' + discountedPkgPrice.toFixed(2);
+            document.getElementById('estFixFeeDisplay').innerText = '$' + fixFee.toFixed(2);
+            document.getElementById('estHardwareCost').innerText = '$' + hwCost.toFixed(2);
+            document.getElementById('estFinalTotal').innerText = '$' + finalTotal.toFixed(2);
+            document.getElementById('regRemainingDebt').value = '$' + remaining.toFixed(2);
+        }
+
+        function showRegisterScreen(isReapply = false, oldPhone = '') {
+            showScreen('register-screen');
+            if (isReapply) {
+                document.getElementById('reapplyNoteContainer').style.display = 'block';
+                document.getElementById('regPhone').value = oldPhone;
+            } else {
+                document.getElementById('reapplyNoteContainer').style.display = 'none';
+            }
+            updatePackageSelects();
+        }
+
+        function setupPaymentScreen() {
+            const img = document.getElementById('payQrImg');
+            const dBtn = document.getElementById('payDownloadBtn');
+            const ibanContainer = document.getElementById('payIbanDisplayContainer');
+            const ibanVal = document.getElementById('payIbanValue');
+
+            if (db.settings.qr) {
+                img.src = db.settings.qr;
+                img.style.display = 'block';
+                dBtn.style.display = 'inline-flex';
+            }
+            if (db.settings.qrIban) {
+                ibanVal.innerText = db.settings.qrIban;
+                ibanContainer.style.display = 'block';
+            }
+        }
+
+        function startPaymentCountdown(durationInSeconds) {
+            let timer = durationInSeconds, minutes, seconds;
+            const display = document.getElementById('countdownTimer');
+            if(paymentTimerInterval) clearInterval(paymentTimerInterval);
+
+            paymentTimerInterval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                display.textContent = minutes + ":" + seconds;
+                if (--timer < 0) {
+                    clearInterval(paymentTimerInterval);
+                    alert('انتهى الوقت المحدد للدفع.');
+                    showScreen('login-screen');
+                }
+            }, 1000);
+        }
+
+        function downloadQRImage() {
+            if (!db.settings.qr) return;
+            const link = document.createElement('a');
+            link.href = db.settings.qr;
+            link.download = 'Payment_QR_USD.png';
+            link.click();
+        }
+
+        function copyIbanText(elementId) {
+            navigator.clipboard.writeText(document.getElementById(elementId).innerText);
+            alert('تم نسخ رقم الحساب بنجاح');
+        }
+
+        function setupAdmin(e) {
+            e.preventDefault();
+            db.admin = { username: document.getElementById('setupU').value, pass: document.getElementById('setupP').value };
+            save(); showScreen('login-screen');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginU').value.trim();
+            const p = document.getElementById('loginP').value.trim();
+
+            if (db.admin && u === db.admin.username && p === db.admin.pass) {
+                currentUser = { role: 'admin', name: db.admin.username };
+                showScreen('admin-dash'); refreshAdmin(); return;
+            }
+            const user = db.users.find(x => (x.phone === u || x.pppoeUser === u) && x.pass === p);
+            if (user) {
+                if (user.status === 'موقوف') return alert('الحساب موقوف.');
+                if (user.status === 'بانتظار موافقة الإدارة') return alert('طلبك قيد المراجعة لدى الإدارة.');
+                if (user.status === 'مرفوض') {
+                    if (confirm('تم رفض طلبك. هل تريد إعادة التقديم؟')) showRegisterScreen(true, user.phone);
+                    return;
+                }
+                if (user.status === 'مقبول وبانتظار الدفع') {
+                    pendingUserRegData = user;
+                    showScreen('payment-screen');
+                    return;
+                }
+
+                currentUser = user;
+                showScreen('client-dash'); refreshClient();
+                return;
+            }
+            alert('بيانات تسجيل الدخول غير صحيحة');
+        }
+
+        function logout() { currentUser = null; showScreen('login-screen'); closeMobileSidebar(); }
+
+        function adminNav(secId, el) {
+            document.querySelectorAll('#admin-dash .page-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('#admin-dash .menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(secId).classList.add('active'); el.classList.add('active');
+            if(window.innerWidth <= 768) closeMobileSidebar();
+        }
+
+        function clientNav(secId, el) {
+            document.querySelectorAll('#client-dash .page-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('#client-dash .menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(secId).classList.add('active'); el.classList.add('active');
+            if(window.innerWidth <= 768) closeMobileSidebar();
+        }
+
+        function refreshAdmin() {
+            document.getElementById('adminName').innerText = currentUser.name;
+            const clients = db.users.filter(u => u.role === 'client');
+            document.getElementById('stat-users').innerText = clients.length;
+            document.getElementById('stat-reqs').innerText = db.requests.length;
+            
+            const totalDebt = clients.reduce((sum, u) => sum + (parseFloat(u.debt) || 0), 0);
+            document.getElementById('stat-debts').innerText = '$' + totalDebt.toFixed(2);
+            document.getElementById('stat-tickets').innerText = db.tickets.filter(t => t.status === 'قيد الانتظار').length;
+            
+            document.getElementById('admin-reqs-table').innerHTML = db.requests.map((r, i) => `
+                <tr>
+                    <td><strong>${r.name}</strong><br><small>${r.phone}</small></td>
+                    <td><span class="badge badge-info">${r.type || 'طلب جديد'}</span></td>
+                    <td>${r.hardwareType || 'تجديد باقة'}<br><small>الكبل: ${r.cableLength || 0}م</small></td>
+                    <td>مدفوع: $${(r.paidAmount || 0).toFixed(2)}<br><code>Txn: ${r.txn || '--'}</code></td>
+                    <td><strong style="color:var(--success);">$${(r.promoDiscount||0).toFixed(2)}</strong></td>
+                    <td><span class="badge badge-warning">${r.status || 'معلق'}</span></td>
+                    <td>
+                        <button class="btn btn-success btn-sm" onclick="approveReq(${i})"><i class="fa-solid fa-check"></i> موافقة واعتماد</button>
+                        <button class="btn btn-danger btn-sm" onclick="rejectReq(${i})"><i class="fa-solid fa-xmark"></i> رفض</button>
+                    </td>
+                </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;">لا يوجد طلبات معلقة</td></tr>';
+
+            renderAdminUsersTable(clients);
+
+            document.getElementById('settingDebtDays').value = db.financeRules.debtDays;
+            document.getElementById('settingMinPayment').value = db.financeRules.minPayment;
+            document.getElementById('priceInstallationFee').value = db.hardwarePrices.installationFee || 10;
+            document.getElementById('priceCableM').value = db.hardwarePrices.cableM;
+            document.getElementById('priceDish').value = db.hardwarePrices.dish;
+            document.getElementById('priceRouter').value = db.hardwarePrices.router;
+            document.getElementById('priceBox').value = db.hardwarePrices.box || 0;
+
+            document.getElementById('admin-pkg-table').innerHTML = db.packages.map(p => `
+                <tr>
+                    <td><strong>${p.name}</strong></td>
+                    <td>$${parseFloat(p.price).toFixed(2)}</td>
+                    <td><span class="badge badge-info">${p.speedKb} KB</span></td>
+                    <td><span class="badge badge-success">${p.discountNew || 0}%</span></td>
+                    <td>${p.limitGb || 100} GB</td>
+                    <td><span class="badge badge-danger">${p.throttledKb} KB</span></td>
+                    <td><button class="btn btn-danger btn-sm" onclick="delPkg(${p.id})"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;">لا يوجد باقات</td></tr>';
+
+            document.getElementById('admin-support-table').innerHTML = db.tickets.map((t, idx) => `
+                <tr>
+                    <td><strong>${t.userName}</strong><br><small>${t.userPhone}</small></td>
+                    <td><strong>${t.subject}</strong></td>
+                    <td>${t.body}</td>
+                    <td>${t.date}</td>
+                    <td><span class="badge ${t.status==='تم الرد'?'badge-success':'badge-warning'}">${t.status}</span></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="replyTicketModal(${idx})"><i class="fa-solid fa-reply"></i> الرد</button>
+                    </td>
+                </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">لا يوجد رسائل دعم فني</td></tr>';
+
+            document.getElementById('admin-logs-table').innerHTML = db.logs.map(l => `
+                <tr><td>${l.date}</td><td><strong>${l.user}</strong></td><td>${l.action}</td></tr>`).join('');
+
+            if(db.settings) {
+                document.getElementById('fbUrl').value = db.settings.fbUrl || '';
+                document.getElementById('fbKey').value = db.settings.fbKey || '';
+                document.getElementById('ghRepo').value = db.settings.ghRepo || '';
+                document.getElementById('ghToken').value = db.settings.ghToken || '';
+                document.getElementById('settingQrIban').value = db.settings.qrIban || '';
+                document.getElementById('settingTickerText').value = db.settings.tickerText || '';
+            }
+        }
+
+        function renderAdminUsersTable(userList) {
+            document.getElementById('admin-users-table').innerHTML = userList.map(u => {
+                const pkg = db.packages.find(p => p.name === u.pkgName) || { limitGb: 100, speedKb: 2000, throttledKb: 512 };
+                const usedGb = u.usedGb || 0;
+                const isThrottled = usedGb >= pkg.limitGb;
+                const currentSpeedKb = isThrottled ? pkg.throttledKb : pkg.speedKb;
+
+                return `
+                <tr>
+                    <td><strong>${u.name}</strong><br><small>${u.phone}</small></td>
+                    <td>User: <code>${u.pppoeUser}</code><br><small>IP: ${u.staticIp || 'DHCP'}</small></td>
+                    <td>
+                        <strong>${usedGb} / ${pkg.limitGb} GB</strong>
+                        <button class="btn btn-sm btn-secondary" style="padding:2px 5px;" onclick="addUsedGb('${u.phone}', 10)">+10GB</button>
+                    </td>
+                    <td><span class="badge ${isThrottled?'badge-danger':'badge-success'}">${currentSpeedKb} KB ${isThrottled?'(مخفضة)':''}</span></td>
+                    <td>${u.exp}</td>
+                    <td><span style="color:var(--danger); font-weight:bold;">$${(u.debt||0).toFixed(2)}</span></td>
+                    <td><span class="badge ${u.status==='نشط'?'badge-success':'badge-danger'}">${u.status}</span></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="editUserModal('${u.phone}')" title="تعديل"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-success btn-sm" onclick="quickRenew('${u.phone}')" title="تجديد سريع"><i class="fa-solid fa-arrows-rotate"></i></button>
+                        <button class="btn btn-warning btn-sm" onclick="toggleUser('${u.phone}')" title="إيقاف/تفعيل"><i class="fa-solid fa-power-off"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="delUser('${u.phone}')" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="8" style="text-align:center;">لا يوجد مشتركين</td></tr>';
+        }
+
+        function addUsedGb(phone, gb) {
+            let u = db.users.find(x => x.phone === phone);
+            if(u) {
+                u.usedGb = (u.usedGb || 0) + gb;
+                const pkg = db.packages.find(p => p.name === u.pkgName) || { limitGb: 100, throttledKb: 512 };
+                if(u.usedGb >= pkg.limitGb) {
+                    syncWithCloudMikrotik(`تخفيض سرعة المشترك ${u.pppoeUser} إلى ${pkg.throttledKb} KB بسبب استهلاك السعة`);
+                }
+                addLog(`إضافة استهلاك ${gb}GB للمشترك ${u.name}`);
+                save(); refreshAdmin();
+            }
+        }
+
+        function filterUsers() {
+            const q = document.getElementById('searchUser').value.toLowerCase();
+            const filtered = db.users.filter(u => u.role === 'client' && (
+                u.name.toLowerCase().includes(q) || 
+                u.phone.includes(q) || 
+                (u.pppoeUser && u.pppoeUser.toLowerCase().includes(q))
+            ));
+            renderAdminUsersTable(filtered);
+        }
+
+        function openAddUserModal() {
+            const body = `
+                <form onsubmit="saveNewUserModal(event)">
+                    <div class="form-group"><label>الاسم الكامل *</label><input type="text" id="mName" required></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>رقم الهاتف *</label><input type="text" id="mPhone" required></div>
+                        <div class="form-group"><label>كلمة المرور *</label><input type="password" id="mPass" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>يوزر الاتصال PPPoE</label><input type="text" id="mPppoeU" placeholder="تلقائي إن ترك فارغاً"></div>
+                        <div class="form-group"><label>Static IP (اختياري)</label><input type="text" id="mIp" placeholder="192.168.10.x"></div>
+                    </div>
+                    <div class="form-group"><label>الباقة *</label><select id="mPkg">${db.packages.map(p=>`<option value="${p.name}">${p.name} ($${p.price})</option>`).join('')}</select></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>الذمة / الدين الأولية ($)</label><input type="number" step="0.01" id="mDebt" value="0"></div>
+                        <div class="form-group"><label>البرج / المنطقة</label><input type="text" id="mTower" value="الرئيسي"></div>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block">إضافة المشترك فوراً</button>
+                </form>
+            `;
+            openModal('إضافة مشترك جديد يدويّاً', body);
+        }
+
+        function saveNewUserModal(e) {
+            e.preventDefault();
+            const phone = document.getElementById('mPhone').value.trim();
+            if(db.users.find(u => u.phone === phone)) return alert('رقم الهاتف مسجل مسبقاً');
+
+            let d = new Date(); d.setDate(d.getDate() + 30);
+            let dueDate = new Date(); dueDate.setDate(dueDate.getDate() + db.financeRules.debtDays);
+
+            const newUser = {
+                role: 'client',
+                name: document.getElementById('mName').value.trim(),
+                phone: phone,
+                pass: document.getElementById('mPass').value.trim(),
+                pppoeUser: document.getElementById('mPppoeU').value.trim() || `hn_${Math.floor(1000+Math.random()*9000)}`,
+                pppoePass: Math.random().toString(36).slice(-6),
+                staticIp: document.getElementById('mIp').value.trim() || 'DHCP',
+                pkgName: document.getElementById('mPkg').value,
+                tower: document.getElementById('mTower').value.trim(),
+                exp: d.toISOString().split('T')[0],
+                debt: parseFloat(document.getElementById('mDebt').value) || 0,
+                usedGb: 0,
+                debtDueDate: dueDate.toISOString(),
+                status: 'نشط'
+            };
+
+            db.users.push(newUser);
+            syncWithCloudMikrotik(`إضافة وتفعيل مشترك جديد ${newUser.pppoeUser} عبر Firebase & GitHub`);
+            addLog(`إضافة مشترك جديد يدوياً: ${newUser.name}`);
+            save(); closeModal(); refreshAdmin();
+        }
+
+        function editUserModal(phone) {
+            const u = db.users.find(x => x.phone === phone);
+            if(!u) return;
+
+            const body = `
+                <form onsubmit="saveEditUserModal(event, '${u.phone}')">
+                    <div class="form-group"><label>الاسم الكامل</label><input type="text" id="eName" value="${u.name}" required></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>كلمة المرور</label><input type="text" id="ePass" value="${u.pass}" required></div>
+                        <div class="form-group"><label>يوزر PPPoE</label><input type="text" id="ePppoeU" value="${u.pppoeUser}" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>استهلاك الجيجابايت (GB)</label><input type="number" id="eUsedGb" value="${u.usedGb || 0}"></div>
+                        <div class="form-group"><label>الباقة</label><select id="ePkg">${db.packages.map(p=>`<option value="${p.name}" ${p.name===u.pkgName?'selected':''}>${p.name}</option>`).join('')}</select></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>تاريخ الانتهاء</label><input type="date" id="eExp" value="${u.exp}"></div>
+                        <div class="form-group"><label>الدين المستحق ($)</label><input type="number" step="0.01" id="eDebt" value="${u.debt || 0}"></div>
+                    </div>
+                    <div class="form-group"><label>الحالة</label>
+                        <select id="eStatus">
+                            <option value="نشط" ${u.status==='نشط'?'selected':''}>نشط</option>
+                            <option value="موقوف" ${u.status==='موقوف'?'selected':''}>موقوف</option>
+                            <option value="مفصول لعدم السداد" ${u.status==='مفصول لعدم السداد'?'selected':''}>مفصول لعدم السداد</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">حفظ التعديلات</button>
+                </form>
+            `;
+            openModal(`تعديل بيانات المشترك: ${u.name}`, body);
+        }
+
+        function saveEditUserModal(e, oldPhone) {
+            e.preventDefault();
+            let u = db.users.find(x => x.phone === oldPhone);
+            if(u) {
+                u.name = document.getElementById('eName').value.trim();
+                u.pass = document.getElementById('ePass').value.trim();
+                u.pppoeUser = document.getElementById('ePppoeU').value.trim();
+                u.usedGb = parseInt(document.getElementById('eUsedGb').value) || 0;
+                u.pkgName = document.getElementById('ePkg').value;
+                u.exp = document.getElementById('eExp').value;
+                u.debt = parseFloat(document.getElementById('eDebt').value) || 0;
+                u.status = document.getElementById('eStatus').value;
+                syncWithCloudMikrotik(`تحديث إعدادات المشترك ${u.pppoeUser} سحابياً`);
+                addLog(`تعديل بيانات المشترك: ${u.name}`);
+                save(); closeModal(); refreshAdmin();
+            }
+        }
+
+        function replyTicketModal(idx) {
+            const t = db.tickets[idx];
+            const body = `
+                <div style="margin-bottom:15px;">
+                    <p><strong>المشترك:</strong> ${t.userName} (${t.userPhone})</p>
+                    <p><strong>الموضوع:</strong> ${t.subject}</p>
+                    <p style="background:#f1f5f9; padding:10px; border-radius:8px; margin-top:5px;">${t.body}</p>
+                </div>
+                <form onsubmit="saveTicketReply(event, ${idx})">
+                    <div class="form-group"><label>رد الدعم الفني والإدارة *</label><textarea id="tReplyText" rows="3" required>${t.reply || ''}</textarea></div>
+                    <button type="submit" class="btn btn-success btn-block">حفظ وإرسال الرد للمشترك</button>
+                </form>
+            `;
+            openModal('الرد على تذكرة الدعم الفني', body);
+        }
+
+        function saveTicketReply(e, idx) {
+            e.preventDefault();
+            db.tickets[idx].reply = document.getElementById('tReplyText').value.trim();
+            db.tickets[idx].status = 'تم الرد';
+            addLog(`الرد على تذكرة المشترك: ${db.tickets[idx].userName}`);
+            save(); closeModal(); refreshAdmin();
+        }
+
+        function quickRenew(phone) {
+            let u = db.users.find(x => x.phone === phone);
+            if(u) {
+                let d = new Date(u.exp);
+                if(isNaN(d) || d < new Date()) d = new Date();
+                d.setDate(d.getDate() + 30);
+                u.exp = d.toISOString().split('T')[0];
+                u.usedGb = 0;
+                u.status = 'نشط';
+                syncWithCloudMikrotik(`تجديد اشتراك وتصفير استهلاك المشترك ${u.pppoeUser}`);
+                addLog(`تجديد سريع وتصفير الاستهلاك لمشترك: ${u.name}`);
+                save(); refreshAdmin();
+                alert(`تم تمديد اشتراك ${u.name} لمدة 30 يوم وإعادة تصفير العداد بنجاح.`);
+            }
+        }
+
+        function saveFinanceRules(e) {
+            if(e) e.preventDefault();
+            db.financeRules.debtDays = parseInt(document.getElementById('settingDebtDays').value) || 5;
+            db.financeRules.minPayment = parseFloat(document.getElementById('settingMinPayment').value) || 5;
+            save(); alert('تم حفظ قواعد وشروط المالية والمهل بنجاح');
+        }
+
+        function saveHardwarePrices(e) {
+            e.preventDefault();
+            db.hardwarePrices = {
+                installationFee: parseFloat(document.getElementById('priceInstallationFee').value) || 0,
+                cableM: parseFloat(document.getElementById('priceCableM').value) || 0,
+                dish: parseFloat(document.getElementById('priceDish').value) || 0,
+                router: parseFloat(document.getElementById('priceRouter').value) || 0,
+                box: parseFloat(document.getElementById('priceBox').value) || 0
+            };
+            save(); alert('تم حفظ أجور التركيب الثابتة وأسعار العتاد بنجاح');
+        }
+
+        function addPackage(e) {
+            e.preventDefault();
+            db.packages.push({
+                id: Date.now(),
+                name: document.getElementById('pkgName').value,
+                price: parseFloat(document.getElementById('pkgPrice').value),
+                speedKb: parseInt(document.getElementById('pkgSpeedKb').value) || 2000,
+                discountNew: parseFloat(document.getElementById('pkgDiscount').value) || 0,
+                limitGb: parseInt(document.getElementById('pkgLimitGb').value) || 100,
+                throttledKb: parseInt(document.getElementById('pkgThrottledKb').value) || 512,
+                days: 30
+            });
+            save(); refreshAdmin(); updatePackageSelects(); e.target.reset();
+            alert('تم إضافة الباقة بالسرعات المحددة بالكيلوبايت بنجاح');
+        }
+
+        function delPkg(id) {
+            db.packages = db.packages.filter(p=>p.id!==id);
+            save(); refreshAdmin(); updatePackageSelects();
+        }
+
+        function saveCloudSettings(e) {
+            e.preventDefault();
+            db.settings.fbUrl = document.getElementById('fbUrl').value;
+            db.settings.fbKey = document.getElementById('fbKey').value;
+            db.settings.ghRepo = document.getElementById('ghRepo').value;
+            db.settings.ghToken = document.getElementById('ghToken').value;
+            db.settings.tickerText = document.getElementById('settingTickerText').value;
+            save(); 
+            syncWithCloudMikrotik('تحديث إعدادات Firebase و GitHub سحابياً');
+            alert('تم حفظ إعدادات السحابة بنجاح');
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const phone = document.getElementById('regPhone').value.trim();
+            const pkgId = parseInt(document.getElementById('regPkg').value);
+            const pkg = db.packages.find(p=>p.id===pkgId);
+            const source = document.querySelector('input[name="connSource"]:checked').value;
+
+            let hwSummary = source === 'صحن' ? 'توصيل عبر الصحن' : 'توصيل من علبة قريبة';
+            if(document.getElementById('chkNeedDish').checked) hwSummary += ' + صحن';
+            if(document.getElementById('chkNeedRouter').checked) hwSummary += ' + راوتر';
+            if(document.getElementById('chkNeedCable').checked) hwSummary += ` + كبل (${document.getElementById('regCableLength').value}م)`;
+
+            let dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + db.financeRules.debtDays);
+
+            const promoDiscountVal = pkg ? (pkg.price * (pkg.discountNew || 0)) / 100 : 0;
+
+            const newUserReq = {
+                name: document.getElementById('regName').value.trim(),
+                phone: phone,
+                pass: document.getElementById('regPass').value.trim(),
+                city: document.getElementById('regCity').value.trim(),
+                street: document.getElementById('regStreet').value.trim(),
+                houseNo: document.getElementById('regHouseNo').value.trim(),
+                tower: document.getElementById('regTower').value.trim(),
+                hardwareType: hwSummary,
+                cableLength: parseInt(document.getElementById('regCableLength').value) || 0,
+                pkgName: pkg ? pkg.name : 'افتراضية',
+                paidAmount: parseFloat(document.getElementById('regPaidAmount').value) || 0,
+                promoDiscount: promoDiscountVal,
+                remainingDebt: parseFloat((document.getElementById('regRemainingDebt').value).replace('$','')) || 0,
+                type: 'استبيان مشترك جديد',
+                status: 'بانتظار موافقة الإدارة',
+                txn: 'بانتظار التحويل'
+            };
+
+            db.requests.push(newUserReq);
+            db.users.push({
+                ...newUserReq,
+                role: 'client',
+                exp: 'غير مفعل',
+                pppoeUser: `hn_${Math.floor(1000+Math.random()*9000)}`,
+                pppoePass: Math.random().toString(36).slice(-6),
+                debt: newUserReq.remainingDebt,
+                usedGb: 0,
+                debtDueDate: dueDate.toISOString(),
+                status: 'بانتظار موافقة الإدارة'
+            });
+
+            save();
+            alert('تم إرسال الطلب بنجاح! بانتظار موافقة الإدارة.');
+            showScreen('login-screen');
+        }
+
+        function approveReq(i) {
+            const req = db.requests[i];
+            let user = db.users.find(u => u.phone === req.phone);
+            if (user) {
+                if (req.type === 'تجديد باقة') {
+                    let d = new Date(user.exp);
+                    if(isNaN(d) || d < new Date()) d = new Date();
+                    d.setDate(d.getDate() + 30);
+                    user.exp = d.toISOString().split('T')[0];
+                    user.usedGb = 0;
+                    user.status = 'نشط';
+                    syncWithCloudMikrotik(`تفعيل وتجديد باقة المشترك ${user.pppoeUser}`);
+                } else if (req.type === 'تسديد دين') {
+                    user.debt = Math.max(0, (user.debt || 0) - (req.paidAmount || 0));
+                    if (user.debt === 0 && user.status.includes('مفصول')) user.status = 'نشط';
+                    syncWithCloudMikrotik(`إزالة الفصل وسداد الدين عن المشترك ${user.pppoeUser}`);
+                } else {
+                    user.status = 'مقبول وبانتظار الدفع';
+                    req.status = 'مقبول وبانتظار الدفع';
+                    addLog(`تمت الموافقة على طلب المشترك ${user.name}`);
+                    save(); refreshAdmin();
+                    return;
+                }
+            }
+            db.requests.splice(i, 1);
+            save(); refreshAdmin();
+            alert('تم الاعتماد والتفعيل بنجاح.');
+        }
+
+        function rejectReq(i) {
+            const req = db.requests[i];
+            let user = db.users.find(u => u.phone === req.phone);
+            if(user) user.status = 'مرفوض';
+            db.requests.splice(i, 1);
+            save(); refreshAdmin();
+            alert('تم رفض الطلب.');
+        }
+
+        function submitPaymentTxn() {
+            const txn = document.getElementById('payTxnInput').value.trim();
+            if (!txn) return alert('أدخل رقم العملية');
+            if (pendingUserRegData) {
+                let req = db.requests.find(r => r.phone === pendingUserRegData.phone);
+                if(req) { req.txn = txn; req.status = 'بانتظار موافقة المدير'; }
+                save();
+                alert('تم إرسال رقم العملية للمراجعة اليدوية للمدير.');
+                showScreen('login-screen');
+            }
+        }
+
+        function submitDebtPayment() {
+            const amount = parseFloat(document.getElementById('cliPayAmount').value) || 0;
+            const txn = document.getElementById('cliTxnInput').value.trim();
+            if(amount <= 0 || !txn) return alert('يرجى كتابة المبلغ بالدولار ورقم عملية التحويل');
+
+            db.requests.push({
+                phone: currentUser.phone,
+                name: currentUser.name,
+                type: 'تسديد دين',
+                paidAmount: amount,
+                txn: txn,
+                status: 'بانتظار موافقة المدير'
+            });
+            save(); alert('تم إرسال طلب تسديد الدين للمدير للمراجعة اليدوية.');
+            document.getElementById('cliPayAmount').value = '';
+            document.getElementById('cliTxnInput').value = '';
+        }
+
+        function requestRenewal() {
+            const txn = document.getElementById('cliTxnInput').value.trim();
+            if(!txn) return alert('يرجى إدخال رقم عملية التحويل لتجديد الباقة');
+
+            db.requests.push({
+                phone: currentUser.phone,
+                name: currentUser.name,
+                pkgName: currentUser.pkgName,
+                type: 'تجديد باقة',
+                txn: txn,
+                paidAmount: 15,
+                status: 'بانتظار موافقة المدير'
+            });
+            save(); alert('تم إرسال طلب تجديد الباقة للمراجعة اليدوية للمدير.');
+            document.getElementById('cliTxnInput').value = '';
+        }
+
+        function submitSupportTicket(e) {
+            e.preventDefault();
+            const subject = document.getElementById('ticketSubject').value.trim();
+            const body = document.getElementById('ticketBody').value.trim();
+
+            db.tickets.unshift({
+                id: Date.now(),
+                userPhone: currentUser.phone,
+                userName: currentUser.name,
+                subject: subject,
+                body: body,
+                reply: '',
+                status: 'قيد الانتظار',
+                date: new Date().toLocaleString('ar-EG')
+            });
+
+            save(); refreshClient();
+            alert('تم إرسال رسالتك وتذكرتك بنجاح لفريق خدمة العملاء.');
+            e.target.reset();
+        }
+
+        function runSpeedTest() {
+            const display = document.getElementById('speedResultDisplay');
+            display.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري قياس السرعة...';
+            setTimeout(() => {
+                const randomSpeed = (Math.random() * 5 + 3).toFixed(2);
+                display.innerText = randomSpeed + ' Mbps';
+            }, 2000);
+        }
+
+        function refreshClient() {
+            document.getElementById('clientHeaderName').innerText = currentUser.name;
+            document.getElementById('cli-exp').innerText = currentUser.exp || 'غير مفعل';
+            document.getElementById('cli-debt').innerText = '$' + (currentUser.debt || 0).toFixed(2);
+            
+            document.getElementById('cli-pppoe-u').innerText = currentUser.pppoeUser || '--';
+            document.getElementById('cli-pppoe-p').innerText = currentUser.pppoePass || '••••';
+            document.getElementById('cli-static-ip').innerText = currentUser.staticIp || 'تلقائي (DHCP)';
+            
+            const pkg = db.packages.find(p => p.name === currentUser.pkgName) || { limitGb: 100, speedKb: 2000, throttledKb: 512 };
+            const usedGb = currentUser.usedGb || 0;
+            const isThrottled = usedGb >= pkg.limitGb;
+            const currentSpeedKb = isThrottled ? pkg.throttledKb : pkg.speedKb;
+
+            document.getElementById('cli-pkg').innerText = `${currentUser.pkgName || 'غير محدد'} (${currentSpeedKb} KB)`;
+            
+            const statusEl = document.getElementById('cli-status');
+            statusEl.innerText = currentUser.status || 'نشط';
+            statusEl.className = `badge ${currentUser.status==='نشط'?'badge-success':'badge-danger'}`;
+
+            const pct = Math.min(100, Math.round((usedGb / pkg.limitGb) * 100));
+            document.getElementById('cliUsedGb').innerText = usedGb;
+            document.getElementById('cliLimitGb').innerText = pkg.limitGb;
+            document.getElementById('cliQuotaPercent').innerText = pct + '%';
+            
+            const barFill = document.getElementById('cliQuotaBar');
+            barFill.style.width = pct + '%';
+            barFill.style.background = pct >= 100 ? 'var(--danger)' : (pct >= 80 ? 'var(--warning)' : 'var(--primary)');
+
+            const noticeEl = document.getElementById('cliQuotaNotice');
+            if(isThrottled) {
+                noticeEl.innerHTML = `<span style="color:var(--danger); font-weight:bold;"><i class="fa-solid fa-triangle-exclamation"></i> لقد استهلكت سعة الباقة كاملة (${pkg.limitGb} GB)! تم تخفيض سرعة خطك سحابياً إلى ${pkg.throttledKb} KB حتى نهاية الشهر.</span>`;
+            } else {
+                noticeEl.innerText = `السرعة الحالية: ${pkg.speedKb} KB. تنخفض السرعة إلى ${pkg.throttledKb} KB فقط عند تجاوز سعة ${pkg.limitGb} GB.`;
+            }
+
+            const clientTickets = db.tickets.filter(t => t.userPhone === currentUser.phone);
+            document.getElementById('client-tickets-table').innerHTML = clientTickets.map(t => `
+                <tr>
+                    <td><strong>${t.subject}</strong><br><small>${t.body}</small></td>
+                    <td>${t.date}</td>
+                    <td><span class="badge ${t.status==='تم الرد'?'badge-success':'badge-warning'}">${t.status}</span></td>
+                    <td>${t.reply ? `<strong style="color:var(--primary);">${t.reply}</strong>` : '<em>بانتظار رد الدعم...</em>'}</td>
+                </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;">لا يوجد تذاكر سابقة</td></tr>';
+
+            const alertContainer = document.getElementById('clientDebtAlertContainer');
+            if ((currentUser.debt || 0) > 0 && currentUser.debtDueDate) {
+                const now = new Date();
+                const due = new Date(currentUser.debtDueDate);
+                const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+                
+                if (diffDays <= 2 && diffDays >= 0) {
+                    alertContainer.innerHTML = `
+                        <div style="background:rgba(239, 68, 68, 0.15); border:1px solid var(--danger); padding:15px; border-radius:10px; margin-bottom:20px; color:var(--danger); font-weight:bold;">
+                            <i class="fa-solid fa-triangle-exclamation"></i> تنبيه هام: لديك دين مستحق بقيمة $${(currentUser.debt).toFixed(2)}، وستنتهي مهلة السداد خلال ${diffDays} أيام. يرجى المبادرة بالتسديد فوراً تفادياً للفصل التلقائي!
+                        </div>`;
+                } else if (diffDays < 0) {
+                    alertContainer.innerHTML = `
+                        <div style="background:var(--danger); color:white; padding:15px; border-radius:10px; margin-bottom:20px; font-weight:bold;">
+                            <i class="fa-solid fa-ban"></i> تم فصل اشتراكك تلقائياً لانقضاء مهلة سداد الدين. يرجى تسديد المبلغ المترتب ليعود الحساب للعمل فوراً.
+                        </div>`;
+                } else {
+                    alertContainer.innerHTML = '';
+                }
+            } else {
+                alertContainer.innerHTML = '';
+            }
+
+            if(db.settings.qr) {
+                document.getElementById('cliQrImg').src = db.settings.qr;
+                document.getElementById('cliQrImg').style.display = 'block';
+                document.getElementById('cliDownloadBtn').style.display = 'inline-flex';
+            }
+            if(db.settings.qrIban) {
+                document.getElementById('cliIbanValue').innerText = db.settings.qrIban;
+                document.getElementById('cliIbanContainer').style.display = 'block';
+            }
+        }
+
+        function toggleUser(phone) {
+            let u = db.users.find(x=>x.phone===phone);
+            u.status = u.status==='نشط'?'موقوف':'نشط';
+            syncWithCloudMikrotik(`تغيير حالة المشترك ${u.pppoeUser} إلى ${u.status}`);
+            addLog(`تعديل حالة المشترك ${u.name} إلى ${u.status}`);
+            save(); refreshAdmin();
+        }
+
+        function delUser(phone) {
+            if(confirm('هل أنت تأكد من حذف المشترك نهائياً؟')) {
+                db.users = db.users.filter(x=>x.phone!==phone);
+                addLog(`حذف المشترك صاحب الرقم: ${phone}`);
+                save(); refreshAdmin();
+            }
+        }
+
+        function previewAndDetectQR(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    db.settings.qr = evt.target.result;
+                    document.getElementById('qrPreview').src = evt.target.result;
+                    document.getElementById('qrPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function resetSystemData() {
+            if (confirm('تنبيه: هل تريد بالكامل إعادة ضبط المصنع ومسح كافة البيانات والتسجيل من جديد؟')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
